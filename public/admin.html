@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>MC · Hoá học Challenge</title>
+<style>
+  :root {
+    --bg: #0b1026;
+    --card: rgba(255,255,255,.08);
+    --line: rgba(255,255,255,.16);
+    --text: #f1f5ff;
+    --muted: #a9b4d6;
+    --brand: #7c5cff;
+    --brand2: #19d3c5;
+    --ok: #22c55e;
+    --bad: #ef4444;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1100px 620px at 6% -10%, rgba(124,92,255,.55), transparent 60%),
+      radial-gradient(900px 560px at 108% 0%, rgba(25,211,197,.38), transparent 58%),
+      radial-gradient(900px 700px at 50% 125%, rgba(236,72,153,.24), transparent 60%),
+      var(--bg);
+    overflow: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .55;
+    background-image: linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(circle at 50% 30%, #000, transparent 78%);
+    -webkit-mask-image: radial-gradient(circle at 50% 30%, #000, transparent 78%);
+  }
+  .blob { position: fixed; border-radius: 50%; filter: blur(70px); opacity: .35; pointer-events: none; animation: drift 18s ease-in-out infinite alternate; }
+  .blob.b1 { width: 380px; height: 380px; background: #7c5cff; left: -80px; top: 30%; }
+  .blob.b2 { width: 320px; height: 320px; background: #19d3c5; right: 22%; bottom: -80px; animation-duration: 23s; }
+  .blob.b3 { width: 260px; height: 260px; background: #ec4899; right: -60px; top: 8%; animation-duration: 27s; }
+  @keyframes drift { to { transform: translate(60px, -50px) scale(1.2); } }
+  [hidden] { display: none !important; }
+
+  /* ===== khung ===== */
+  #app { position: relative; height: 100dvh; display: grid; grid-template-rows: auto 1fr auto; }
+  .top { display: flex; align-items: center; gap: 14px; padding: 14px 26px; }
+  .brand { display: flex; align-items: center; gap: 14px; margin-right: auto; }
+  .tile { position: relative; width: 58px; height: 58px; border-radius: 15px; display: grid; place-items: center; flex: none;
+    background: linear-gradient(145deg, #7c5cff, #19d3c5); box-shadow: 0 8px 26px rgba(124,92,255,.5), inset 0 0 0 2px rgba(255,255,255,.35); }
+  .tile .num { position: absolute; top: 5px; left: 7px; font-size: 10px; font-weight: 800; }
+  .tile .sym { font-size: 25px; font-weight: 900; }
+  .brand h1 { margin: 0; font-size: clamp(18px, 1.9vw, 28px); letter-spacing: .5px; }
+  .brand p { margin: 2px 0 0; color: var(--muted); font-size: clamp(12px, 1vw, 15px); }
+  .chip { padding: 8px 14px; border-radius: 999px; font-weight: 800; font-size: clamp(13px, 1.1vw, 16px); background: var(--card); border: 1px solid var(--line); white-space: nowrap; }
+  .chip.phase { background: linear-gradient(135deg, var(--brand), #a855f7); border-color: transparent; }
+  .iconbtn { width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 18px; cursor: pointer; transition: background .15s, transform .1s; }
+  .iconbtn:hover { background: rgba(255,255,255,.16); }
+  .iconbtn:active { transform: scale(.94); }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; background: #f59e0b; }
+  .dot.on { background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+
+  .main { display: grid; grid-template-columns: 1fr minmax(290px, 24vw); gap: 20px; padding: 0 26px 12px; min-height: 0; }
+  .stage { min-height: 0; overflow: auto; display: flex; flex-direction: column; animation: rise .4s ease both; padding-right: 2px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .side { min-height: 0; overflow: auto; padding: 16px; border-radius: 22px; background: var(--card); border: 1px solid var(--line); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .side h3 { margin: 0 0 12px; font-size: 17px; letter-spacing: .5px; display: flex; justify-content: space-between; align-items: center; }
+  .side h3 small { color: var(--muted); font-weight: 600; }
+  .board { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .row { display: grid; grid-template-columns: 38px 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 13px; background: rgba(255,255,255,.07); animation: rise .4s both; }
+  .row.top1 { background: linear-gradient(135deg, rgba(251,191,36,.35), rgba(245,158,11,.15)); outline: 1.5px solid rgba(251,191,36,.7); }
+  .row .rk { font-size: 20px; font-weight: 900; text-align: center; }
+  .row .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .tm { display: block; color: var(--muted); font-size: 12px; font-weight: 500; }
+  .row .sc { font-weight: 900; font-size: 18px; }
+  .empty { color: var(--muted); text-align: center; padding: 26px 8px; }
+
+  /* ===== phòng chờ ===== */
+  .lobby { margin: auto; width: 100%; max-width: 1100px; display: grid; grid-template-columns: auto 1fr; gap: clamp(24px, 4vw, 64px); align-items: center; }
+  .qrcard { padding: 20px; border-radius: 28px; background: #fff; color: #0b1026; text-align: center; box-shadow: 0 24px 80px rgba(124,92,255,.5); animation: floaty 5s ease-in-out infinite; }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  .qrbox { width: 260px; height: 260px; display: grid; place-items: center; }
+  .qrbox img, .qrbox canvas { max-width: 100%; max-height: 100%; }
+  .qrcap { margin-top: 12px; font-weight: 800; font-size: 18px; }
+  .eyebrow { color: var(--brand2); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; font-size: 14px; }
+  .big { margin: 6px 0 8px; font-size: clamp(34px, 5vw, 76px); line-height: 1.02; letter-spacing: -1px;
+    background: linear-gradient(90deg, #fff, #c4b5fd 45%, #5eead4); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lede { margin: 0 0 18px; color: var(--muted); font-size: clamp(15px, 1.5vw, 22px); }
+  .linkrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; }
+  code { padding: 10px 14px; border-radius: 12px; background: rgba(0,0,0,.35); border: 1px solid var(--line); font-size: clamp(14px, 1.4vw, 20px); word-break: break-all; }
+  .ghost { padding: 10px 16px; border-radius: 12px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .ghost:hover { background: rgba(255,255,255,.16); }
+  .ghost.danger:hover { background: rgba(239,68,68,.3); }
+  .counter { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }
+  .cnum { font-size: clamp(56px, 8vw, 120px); font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; background: linear-gradient(135deg, #fde68a, #f59e0b); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .clabel { font-size: clamp(16px, 1.8vw, 26px); color: var(--muted); font-weight: 600; }
+  .rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; color: var(--muted); font-size: clamp(14px, 1.2vw, 18px); }
+
+  /* ===== câu hỏi ===== */
+  .qwrap { display: flex; flex-direction: column; gap: 16px; min-height: 100%; }
+  .qtop { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+  .qchips { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .qchip { padding: 6px 14px; border-radius: 999px; font-weight: 900; letter-spacing: 1px; background: rgba(25,211,197,.18); border: 1px solid rgba(25,211,197,.55); color: #99f6e4; font-size: clamp(13px, 1.1vw, 17px); }
+  .qchip.pts { background: rgba(251,191,36,.16); border-color: rgba(251,191,36,.55); color: #fde68a; }
+  .qtext { font-size: clamp(22px, 2.7vw, 46px); line-height: 1.25; font-weight: 800; }
+  .qimg { max-height: 26vh; max-width: 100%; align-self: center; border-radius: 16px; background: #fff; object-fit: contain; }
+  .ring { position: relative; width: clamp(110px, 11vw, 170px); aspect-ratio: 1; flex: none; }
+  .ring svg { width: 100%; height: 100%; }
+  .rbg { fill: none; stroke: rgba(255,255,255,.14); stroke-width: 10; }
+  .rarc { fill: none; stroke: var(--brand2); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset .12s linear, stroke .3s; }
+  .ring.warn .rarc { stroke: #fbbf24; }
+  .ring.danger .rarc { stroke: #ef4444; }
+  .rnum { position: absolute; inset: 0; display: grid; place-items: center; font-size: clamp(38px, 4.4vw, 68px); font-weight: 900; font-variant-numeric: tabular-nums; }
+  .ring.danger .rnum { color: #fca5a5; animation: beat .5s ease-in-out infinite alternate; }
+  @keyframes beat { to { transform: scale(1.18); } }
+
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .ocard { position: relative; overflow: hidden; display: flex; align-items: center; gap: 16px; min-height: clamp(76px, 12vh, 130px); padding: 14px 20px;
+    border-radius: 20px; font-weight: 700; font-size: clamp(18px, 1.9vw, 32px); animation: rise .45s both; transition: opacity .4s, transform .3s; }
+  .ocard .oletter { flex: none; width: clamp(40px, 3.6vw, 58px); height: clamp(40px, 3.6vw, 58px); border-radius: 14px; display: grid; place-items: center; font-weight: 900; background: rgba(0,0,0,.28); }
+  .ocard .otext { flex: 1; min-width: 0; }
+  .ocard .ocnt { flex: none; font-weight: 900; font-size: clamp(16px, 1.6vw, 26px); text-align: right; }
+  .ocard .obar { position: absolute; left: 0; bottom: 0; height: 9px; width: 0; background: rgba(255,255,255,.9); border-radius: 0 9px 9px 0; transition: width 1s cubic-bezier(.2,.8,.2,1); }
+  .o0 { background: linear-gradient(135deg, #e11d48, #fb7185); }
+  .o1 { background: linear-gradient(135deg, #2563eb, #60a5fa); }
+  .o2 { background: linear-gradient(135deg, #d97706, #fbbf24); }
+  .o3 { background: linear-gradient(135deg, #059669, #34d399); }
+  .o4 { background: linear-gradient(135deg, #7c3aed, #c084fc); }
+  .o5 { background: linear-gradient(135deg, #475569, #94a3b8); }
+  .ocard.wrong { opacity: .35; }
+  .ocard.right { outline: 5px solid #fff; box-shadow: 0 0 60px rgba(34,197,94,.75); transform: scale(1.02); animation: popin .5s cubic-bezier(.2,1.5,.4,1) both; }
+  .ocard.right .oletter::after { content: "✓"; }
+  .ocard.right .oletter { font-size: 0; }
+  .ocard.right .oletter::after { font-size: clamp(24px, 2.4vw, 38px); }
+  @keyframes popin { from { transform: scale(.92); } to { transform: scale(1.02); } }
+
+  .prog { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); margin-top: auto; }
+  .prog .ptxt { font-weight: 800; font-size: clamp(15px, 1.4vw, 22px); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .ptrack { flex: 1; height: 16px; border-radius: 999px; background: rgba(255,255,255,.14); overflow: hidden; }
+  .pfill { height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--brand), var(--brand2)); transition: width .3s; }
+
+  .summary { display: flex; gap: 12px; flex-wrap: wrap; }
+  .sum { padding: 12px 18px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); font-weight: 800; font-size: clamp(15px, 1.4vw, 22px); }
+  .sum b { font-size: 1.4em; margin-right: 6px; }
+  .explain { padding: 16px 20px; border-radius: 18px; background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.45); font-size: clamp(15px, 1.5vw, 24px); line-height: 1.45; }
+  .explain small { display: block; color: #86efac; font-weight: 900; letter-spacing: 1px; margin-bottom: 4px; }
+
+  /* ===== quán quân ===== */
+  .hero { margin: auto; text-align: center; max-width: 900px; }
+  .crown { font-size: clamp(70px, 9vw, 140px); line-height: 1; animation: floaty 3s ease-in-out infinite; filter: drop-shadow(0 10px 30px rgba(251,191,36,.6)); }
+  .herot { margin: 8px 0 18px; font-size: clamp(32px, 5vw, 80px); font-weight: 900; letter-spacing: 3px; background: linear-gradient(90deg, #fde68a, #f59e0b, #fb7185); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .champs { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; }
+  .champ { min-width: 250px; padding: 20px 30px; border-radius: 24px; background: linear-gradient(135deg, rgba(251,191,36,.3), rgba(124,92,255,.25)); border: 2px solid rgba(251,191,36,.75); box-shadow: 0 0 50px rgba(251,191,36,.35); animation: popin .6s cubic-bezier(.2,1.5,.4,1) both; }
+  .champ .cn { font-size: clamp(24px, 3vw, 46px); font-weight: 900; word-break: break-word; }
+  .champ .cs { margin-top: 6px; color: #fde68a; font-weight: 800; font-size: clamp(16px, 1.6vw, 24px); }
+  .heronote { margin-top: 18px; color: var(--muted); font-size: clamp(14px, 1.4vw, 20px); }
+
+  /* ===== thanh điều khiển ===== */
+  .ctrl { display: flex; align-items: center; gap: 14px; padding: 14px 26px 20px; background: linear-gradient(transparent, rgba(0,0,0,.4)); }
+  .ctrl .grow { flex: 1; }
+  .primary { padding: 16px clamp(28px, 4vw, 64px); border: 0; border-radius: 20px; color: #fff; font: inherit; font-weight: 900; font-size: clamp(18px, 1.9vw, 30px); cursor: pointer;
+    background: linear-gradient(135deg, #7c5cff, #a855f7 50%, #ec4899); box-shadow: 0 12px 40px rgba(124,92,255,.55); transition: transform .12s, filter .2s; }
+  .primary:hover:not(:disabled) { transform: translateY(-2px); }
+  .primary:active:not(:disabled) { transform: scale(.97); }
+  .primary.go { background: linear-gradient(135deg, #16a34a, #22c55e 55%, #14b8a6); box-shadow: 0 12px 40px rgba(34,197,94,.5); animation: glow 1.8s ease-in-out infinite; }
+  .primary:disabled { filter: grayscale(.7) brightness(.75); cursor: not-allowed; animation: none; }
+  @keyframes glow { 0%,100% { box-shadow: 0 12px 40px rgba(34,197,94,.45); } 50% { box-shadow: 0 12px 64px rgba(34,197,94,.95); } }
+  .secondary { padding: 16px 28px; border-radius: 20px; border: 2px solid rgba(251,191,36,.7); background: rgba(251,191,36,.12); color: #fde68a; font: inherit; font-weight: 900; font-size: clamp(16px, 1.5vw, 24px); cursor: pointer; }
+  .secondary:hover { background: rgba(251,191,36,.25); }
+  .hint { color: var(--muted); font-size: 13px; text-align: right; }
+
+  /* ===== lớp phủ ===== */
+  .overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgba(5,8,22,.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .modal { width: min(440px, 100%); padding: 28px; border-radius: 26px; background: rgba(20,26,60,.92); border: 1px solid var(--line); text-align: center; box-shadow: 0 30px 90px rgba(0,0,0,.6); animation: rise .4s both; }
+  .modal h2 { margin: 12px 0 4px; font-size: 26px; }
+  .modal p { margin: 0 0 18px; color: var(--muted); }
+  .modal input { width: 100%; padding: 15px 16px; font-size: 18px; color: var(--text); background: rgba(255,255,255,.1); border: 1.5px solid var(--line); border-radius: 14px; outline: none; text-align: center; }
+  .modal input:focus { border-color: var(--brand2); box-shadow: 0 0 0 4px rgba(25,211,197,.22); }
+  .modal .primary { width: 100%; margin-top: 14px; padding: 15px; font-size: 19px; }
+  .err { min-height: 22px; margin-top: 10px; color: #fca5a5; font-weight: 700; }
+  .modal.qrmodal { width: min(560px, 100%); background: #fff; color: #0b1026; }
+  .modal.qrmodal p { color: #475569; }
+  .modal.qrmodal .qrbox { width: min(420px, 70vw); height: min(420px, 70vw); margin: 0 auto; }
+  .toast { position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 60; padding: 12px 20px; border-radius: 14px; background: rgba(239,68,68,.92); font-weight: 700; box-shadow: 0 10px 30px rgba(0,0,0,.4); animation: rise .3s both; }
+  .confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; }
+
+  @media (max-width: 960px) {
+    body { overflow: auto; }
+    #app { height: auto; min-height: 100dvh; }
+    .main { grid-template-columns: 1fr; }
+    .side { max-height: 34vh; }
+    .lobby { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .linkrow, .counter { justify-content: center; }
+    .opts { grid-template-columns: 1fr; }
+    .top { flex-wrap: wrap; }
+    .ctrl { flex-wrap: wrap; justify-content: center; }
+    .hint { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<!-- Đăng nhập MC -->
+<div id="login" class="overlay">
+  <form id="loginForm" class="modal" autocomplete="off">
+    <div class="tile" style="margin:0 auto"><span class="num">10</span><span class="sym">Ho</span></div>
+    <h2>Đăng nhập MC</h2>
+    <p>Nhập mật khẩu quản trị để điều khiển cuộc thi.</p>
+    <input id="passInput" type="password" placeholder="Mật khẩu" autofocus>
+    <button class="primary" type="submit">Vào bảng điều khiển</button>
+    <div id="loginErr" class="err" role="alert"></div>
+  </form>
+</div>
+
+<!-- Ứng dụng -->
+<div id="app" hidden>
+  <header class="top">
+    <div class="brand">
+      <div class="tile"><span class="num">10</span><span class="sym">Ho</span></div>
+      <div>
+        <h1>HOÁ HỌC CHALLENGE</h1>
+        <p>Chương 2 · Bảng tuần hoàn các nguyên tố hoá học</p>
+      </div>
+    </div>
+    <span class="chip" id="chipConn"><i class="dot" id="connDot"></i><span id="chipPlayers">0 người chơi</span></span>
+    <span class="chip" id="chipQ" hidden></span>
+    <span class="chip phase" id="chipPhase">Phòng chờ</span>
+    <button class="iconbtn" id="btnQr" type="button" title="Hiện mã QR">📱</button>
+    <button class="iconbtn" id="btnMute" type="button" title="Bật/tắt âm thanh">🔊</button>
+    <button class="iconbtn" id="btnFull" type="button" title="Toàn màn hình">⛶</button>
+  </header>
+
+  <main class="main">
+    <section class="stage" id="stage"></section>
+    <aside class="side">
+      <h3>🏆 Bảng xếp hạng <small id="boardNote"></small></h3>
+      <ol class="board" id="board"></ol>
+    </aside>
+  </main>
+
+  <footer class="ctrl">
+    <button class="ghost" id="btnReset" type="button">↺ Đặt lại điểm</button>
+    <button class="ghost danger" id="btnWipe" type="button">🗑 Xoá người chơi</button>
+    <span class="grow"></span>
+    <button class="secondary" id="btnLock" type="button" hidden>⏭ Chốt sớm &amp; chấm điểm</button>
+    <button class="primary go" id="btnPrimary" type="button">▶ Bắt đầu cuộc thi</button>
+    <span class="grow"></span>
+    <span class="hint">Phím <b>Space</b> hoặc <b>→</b> = nút chính</span>
+  </footer>
+</div>
+
+<!-- Mã QR phóng to -->
+<div id="qrOverlay" class="overlay" hidden>
+  <div class="modal qrmodal">
+    <div class="qrbox" id="qrBig"></div>
+    <h2>Quét mã để tham gia</h2>
+    <p id="qrBigLink"></p>
+    <button class="ghost" id="btnQrClose" type="button" style="color:#0b1026;border-color:#cbd5e1;background:#f1f5f9">Đóng</button>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  /* ================= tiện ích ================= */
+  const $ = (id) => document.getElementById(id);
+  const LETTERS = 'ABCDEF';
+  const PHASE_LABEL = { lobby: 'Phòng chờ', question: 'Đang thi', reveal: 'Công bố đáp án', finished: 'Kết thúc' };
+  const fmtTime = (ms) => (ms / 1000).toFixed(2).replace('.', ',') + ' giây';
+
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    if (props) {
+      for (const [k, v] of Object.entries(props)) {
+        if (v === false || v == null) continue;
+        if (k === 'class') el.className = v;
+        else if (k === 'text') el.textContent = v;
+        else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+        else el.setAttribute(k, v === true ? '' : v);
+      }
+    }
+    for (const kid of kids.flat()) if (kid != null) el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+    return el;
+  }
+  const store = {
+    get(k) { try { return sessionStorage.getItem(k); } catch (_) { return null; } },
+    set(k, v) { try { sessionStorage.setItem(k, v); } catch (_) {} },
+    del(k) { try { sessionStorage.removeItem(k); } catch (_) {} },
+  };
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+  }
+
+  /* ================= âm thanh (WebAudio) ================= */
+  const Snd = (() => {
+    let ctx = null, flip = false;
+    let muted = false;
+    try { muted = localStorage.getItem('quiz-admin-mute') === '1'; } catch (_) {}
+    function ensure() {
+      try {
+        if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) ctx = new AC(); }
+        if (ctx && ctx.state === 'suspended') ctx.resume();
+      } catch (_) {}
+    }
+    function tone(freq, dur, o = {}) {
+      if (muted || !ctx) return;
+      const t = ctx.currentTime + (o.delay || 0);
+      const osc = ctx.createOscillator(), g = ctx.createGain();
+      osc.type = o.type || 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      if (o.slide) osc.frequency.exponentialRampToValueAtTime(Math.max(30, freq + o.slide), t + dur);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(o.vol || 0.15, t + 0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(t); osc.stop(t + dur + 0.03);
+    }
+    return {
+      ensure,
+      get muted() { return muted; },
+      setMuted(v) { muted = v; try { localStorage.setItem('quiz-admin-mute', v ? '1' : '0'); } catch (_) {} },
+      tick(urgent) {
+        flip = !flip;
+        if (urgent) { tone(1760, 0.08, { type: 'square', vol: 0.12 }); tone(1320, 0.08, { type: 'square', vol: 0.08, delay: 0.1 }); }
+        else tone(flip ? 1000 : 760, 0.06, { type: 'triangle', vol: 0.2 });
+      },
+      start() { [392, 523, 659, 784, 1047].forEach((f, i) => tone(f, 0.16, { type: 'triangle', vol: 0.16, delay: i * 0.08 })); },
+      reveal() { tone(660, 0.14, { type: 'triangle', vol: 0.16 }); tone(880, 0.24, { type: 'triangle', vol: 0.16, delay: 0.14 }); },
+      fanfare() { [523, 523, 523, 659, 784, 659, 784, 1047].forEach((f, i) => tone(f, 0.24, { type: 'square', vol: 0.1, delay: i * 0.15 })); },
+    };
+  })();
+  document.addEventListener('pointerdown', () => Snd.ensure(), { passive: true });
+
+  /* ================= pháo giấy ================= */
+  function confetti(ms = 7000) {
+    const c = document.createElement('canvas');
+    c.className = 'confetti';
+    document.body.append(c);
+    const W = (c.width = window.innerWidth), H = (c.height = window.innerHeight);
+    const g = c.getContext('2d');
+    const colors = ['#7c5cff', '#19d3c5', '#f59e0b', '#ec4899', '#22c55e', '#60a5fa', '#fde68a'];
+    const parts = Array.from({ length: 260 }, () => ({
+      x: Math.random() * W, y: -20 - Math.random() * H * 0.8,
+      vx: (Math.random() - 0.5) * 4, vy: 2 + Math.random() * 5,
+      s: 8 + Math.random() * 10, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.3,
+      c: colors[Math.floor(Math.random() * colors.length)],
+    }));
+    const end = performance.now() + ms;
+    (function frame(now) {
+      g.clearRect(0, 0, W, H);
+      for (const p of parts) {
+        p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        if (p.y > H + 20 && now < end - 1500) { p.y = -20; p.x = Math.random() * W; }
+        g.save(); g.translate(p.x, p.y); g.rotate(p.r); g.fillStyle = p.c;
+        g.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * 0.6); g.restore();
+      }
+      if (now < end) requestAnimationFrame(frame); else c.remove();
+    })(performance.now());
+  }
+
+  /* ================= mã QR ================= */
+  const joinUrl = () => location.origin + '/';
+  function makeQR(el, text, size) {
+    el.replaceChildren();
+    try {
+      if (window.QRCode) {
+        new QRCode(el, { text, width: size, height: size, colorDark: '#0b1026', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+        return;
+      }
+    } catch (_) {}
+    // Dự phòng khi không tải được thư viện QR: dùng dịch vụ tạo ảnh QR
+    const img = new Image();
+    img.width = size; img.height = size; img.alt = 'Mã QR tham gia';
+    img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=' + size * 2 + 'x' + size * 2 + '&margin=0&data=' + encodeURIComponent(text);
+    img.onerror = () => { el.replaceChildren(h('div', { class: 'qrcap', text: 'Không tạo được mã QR. Hãy gửi link bên dưới.' })); };
+    el.append(img);
+  }
+
+  /* ================= trạng thái ================= */
+  const S = {
+    phase: 'lobby', qIndex: -1, total: 10,
+    q: null, reveal: null, top: [], finished: null,
+    counts: { players: 0, connected: 0, answered: 0 },
+    deadline: 0, duration: 20000, timer: null, lastSec: null,
+    busy: false,
+  };
+  let authed = false;
+  let pass = store.get('quiz-admin-pass') || '';
+  const socket = io();
+
+  /* ================= đăng nhập ================= */
+  function login(p, silent) {
+    socket.emit('admin:login', { password: p }, (res) => {
+      if (res && res.ok) {
+        authed = true; pass = p;
+        store.set('quiz-admin-pass', p);
+        $('login').hidden = true; $('app').hidden = false;
+        applyState(res.state);
+        return;
+      }
+      authed = false;
+      store.del('quiz-admin-pass'); pass = '';
+      $('login').hidden = false; $('app').hidden = true;
+      const reason = res && res.reason;
+      $('loginErr').textContent =
+        reason === 'bad_password' ? 'Sai mật khẩu.' :
+        reason === 'locked' ? 'Nhập sai quá nhiều lần. Hãy tải lại trang.' :
+        reason === 'admin_disabled' ? 'Máy chủ chưa đặt biến môi trường ADMIN_PASSWORD.' :
+        'Không đăng nhập được, hãy thử lại.';
+    });
+  }
+  $('loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    Snd.ensure();
+    const p = $('passInput').value;
+    if (!p) { $('loginErr').textContent = 'Hãy nhập mật khẩu.'; return; }
+    $('loginErr').textContent = '';
+    login(p, false);
+  });
+  socket.on('connect', () => { setConn(true); if (pass) login(pass, true); });
+  socket.on('disconnect', () => { authed = false; setConn(false); });
+  function setConn(on) { $('connDot').classList.toggle('on', on); }
+
+  /* ================= áp dụng trạng thái ================= */
+  function applyState(st) {
+    if (!st) return;
+    stopTimer();
+    S.phase = st.phase; S.qIndex = st.qIndex; S.total = st.total;
+    if (st.counts) S.counts = st.counts;
+    S.q = st.question || null;
+    S.reveal = st.lastReveal || null;
+    S.top = st.top || [];
+    S.finished = st.phase === 'finished'
+      ? { champions: S.top.filter((r) => r.rank === 1 && r.score > 0), top: S.top }
+      : null;
+    if (st.phase === 'question' && st.question) startTimer(st.question.remainingMs, st.question.durationMs);
+    renderAll();
+  }
+
+  /* ================= đồng hồ ================= */
+  const CIRC = 326.73;
+  function startTimer(remainingMs, duration) {
+    stopTimer();
+    S.duration = duration || 20000;
+    S.deadline = performance.now() + Math.max(0, remainingMs);
+    S.lastSec = null;
+    tickUI();
+    S.timer = setInterval(tickUI, 100);
+  }
+  function stopTimer() { if (S.timer) { clearInterval(S.timer); S.timer = null; } }
+  function tickUI() {
+    const left = Math.max(0, S.deadline - performance.now());
+    const sec = Math.ceil(left / 1000);
+    const num = $('ringNum'), arc = $('ringArc'), ring = $('ring');
+    if (num) num.textContent = sec;
+    if (arc) arc.setAttribute('stroke-dashoffset', String(CIRC * (1 - left / S.duration)));
+    if (ring) { ring.classList.toggle('warn', sec <= 10 && sec > 5); ring.classList.toggle('danger', sec <= 5); }
+    if (sec !== S.lastSec) { S.lastSec = sec; if (left > 0) Snd.tick(sec <= 5); }
+    if (left <= 0) stopTimer();
+  }
+
+  /* ================= vẽ giao diện ================= */
+  function renderAll() {
+    renderHeader();
+    renderStage();
+    renderBoard();
+    renderControls();
+  }
+
+  function renderHeader() {
+    setCounts(S.counts, true);
+    $('chipPhase').textContent = PHASE_LABEL[S.phase] || '';
+    const cq = $('chipQ');
+    if (S.qIndex >= 0 && S.phase !== 'lobby') { cq.hidden = false; cq.textContent = 'Câu ' + (S.qIndex + 1) + ' / ' + S.total; }
+    else cq.hidden = true;
+  }
+
+  function setCounts(c, quiet) {
+    if (!c) return;
+    S.counts = c;
+    $('chipPlayers').textContent = c.connected + ' đang online · ' + c.players + ' đã vào';
+    const lc = $('lobbyCount');
+    if (lc) lc.textContent = c.players;
+    const pf = $('ansFill'), pt = $('ansTxt');
+    if (pf && pt) {
+      const denom = Math.max(c.connected, c.answered, 1);
+      pf.style.width = Math.min(100, c.answered / denom * 100) + '%';
+      pt.textContent = 'Đã trả lời: ' + c.answered + ' / ' + Math.max(c.connected, c.answered);
+    }
+  }
+
+  function renderStage() {
+    const stage = $('stage');
+    stage.style.animation = 'none'; void stage.offsetWidth; stage.style.animation = '';
+    if (S.phase === 'lobby') return renderLobby(stage);
+    if (S.phase === 'question' || S.phase === 'reveal') return renderQuestion(stage);
+    return renderFinished(stage);
+  }
+
+  function renderLobby(stage) {
+    const url = joinUrl();
+    const qrBox = h('div', { class: 'qrbox' });
+    stage.replaceChildren(h('div', { class: 'lobby' },
+      h('div', { class: 'qrcard' }, qrBox, h('div', { class: 'qrcap', text: '📱 Quét mã QR để tham gia' })),
+      h('div', null,
+        h('div', { class: 'eyebrow', text: 'Cuộc thi trắc nghiệm trực tuyến' }),
+        h('div', { class: 'big', text: 'Hoá học Challenge' }),
+        h('p', { class: 'lede', text: 'Chương 2 · Bảng tuần hoàn các nguyên tố hoá học · Lớp 10' }),
+        h('div', { class: 'linkrow' },
+          h('code', { text: url }),
+          h('button', { class: 'ghost', type: 'button', text: '📋 Sao chép link', onclick: () => copyText(url) })),
+        h('div', { class: 'counter' },
+          h('span', { class: 'cnum', id: 'lobbyCount', text: String(S.counts.players) }),
+          h('span', { class: 'clabel', text: 'người chơi đã vào phòng' })),
+        h('ul', { class: 'rules' },
+          h('li', { text: '⏱ 10 câu hỏi · mỗi câu 20 giây' }),
+          h('li', { text: '✅ Đúng +10 điểm · sai hoặc bỏ qua +0 điểm' }),
+          h('li', { text: '🏆 Xếp hạng theo điểm, bằng điểm thì ai đúng nhanh hơn xếp trên' }),
+          h('li', { text: '💚 Không loại người chơi nào' })))));
+    makeQR(qrBox, url, 260);
+  }
+
+  function ringEl() {
+    const d = h('div', { class: 'ring', id: 'ring' });
+    d.innerHTML =
+      '<svg viewBox="0 0 120 120" aria-hidden="true">' +
+      '<circle class="rbg" cx="60" cy="60" r="52"/>' +
+      '<circle id="ringArc" class="rarc" cx="60" cy="60" r="52" stroke-dasharray="' + CIRC + '" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>' +
+      '</svg><span class="rnum" id="ringNum">20</span>';
+    return d;
+  }
+
+  function renderQuestion(stage) {
+    const q = S.q, rv = S.phase === 'reveal' ? S.reveal : null;
+    const isReveal = !!rv;
+    const optCount = q ? q.options.length : (rv ? rv.counts.length : 4);
+    const answered = rv ? Math.max(1, rv.answeredCount) : 1;
+
+    const opts = h('div', { class: 'opts' });
+    for (let i = 0; i < optCount; i++) {
+      const txt = q ? q.options[i] : 'Đáp án ' + LETTERS[i];
+      const card = h('div', { class: 'ocard o' + i + (isReveal ? (i === rv.correct ? ' right' : ' wrong') : ''), style: 'animation-delay:' + i * 70 + 'ms' },
+        h('span', { class: 'oletter', text: LETTERS[i] }),
+        h('span', { class: 'otext', text: txt }));
+      if (isReveal) {
+        const n = rv.counts[i] || 0;
+        card.append(h('span', { class: 'ocnt', text: n + ' (' + Math.round(n / answered * 100) + '%)' }));
+        const bar = h('span', { class: 'obar' });
+        card.append(bar);
+        requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = (n / answered * 100) + '%'; }));
+      }
+      opts.append(card);
+    }
+
+    const left = h('div', null,
+      h('div', { class: 'qchips' },
+        h('span', { class: 'qchip', text: 'CÂU ' + (S.qIndex + 1) + ' / ' + S.total }),
+        h('span', { class: 'qchip pts', text: '+10 ĐIỂM' })),
+      h('div', { class: 'qtext', text: q ? q.text : 'Câu ' + (S.qIndex + 1) }));
+
+    const wrap = h('div', { class: 'qwrap' },
+      h('div', { class: 'qtop' }, left, isReveal ? null : ringEl()),
+      q && q.image ? h('img', { class: 'qimg', src: q.image, alt: '' }) : null,
+      opts);
+
+    if (isReveal) {
+      const noAns = Math.max(0, S.counts.players - rv.answeredCount);
+      wrap.append(h('div', { class: 'summary' },
+        h('div', { class: 'sum' }, h('b', { text: String(rv.correctCount) }), 'trả lời đúng'),
+        h('div', { class: 'sum' }, h('b', { text: String(rv.answeredCount) }), 'đã trả lời'),
+        h('div', { class: 'sum' }, h('b', { text: String(noAns) }), 'bỏ qua')));
+      if (rv.explanation) wrap.append(h('div', { class: 'explain' }, h('small', { text: 'GIẢI THÍCH' }), rv.explanation));
+    } else {
+      wrap.append(h('div', { class: 'prog' },
+        h('span', { class: 'ptxt', id: 'ansTxt', text: 'Đã trả lời: 0 / 0' }),
+        h('div', { class: 'ptrack' }, h('div', { class: 'pfill', id: 'ansFill' }))));
+    }
+    stage.replaceChildren(wrap);
+    if (!isReveal) { setCounts(S.counts); tickUI(); }
+  }
+
+  function renderFinished(stage) {
+    const champs = (S.finished && S.finished.champions) || [];
+    const hero = h('div', { class: 'hero' });
+    if (champs.length) {
+      hero.append(
+        h('div', { class: 'crown', text: '👑' }),
+        h('div', { class: 'herot', text: champs.length > 1 ? 'ĐỒNG HẠNG QUÁN QUÂN' : 'QUÁN QUÂN' }));
+      const box = h('div', { class: 'champs' });
+      champs.slice(0, 8).forEach((c, i) => box.append(
+        h('div', { class: 'champ', style: 'animation-delay:' + i * 120 + 'ms' },
+          h('div', { class: 'cn', text: c.name }),
+          h('div', { class: 'cs', text: c.score + ' điểm · ' + fmtTime(c.totalTimeMs) }))));
+      hero.append(box);
+      if (champs.length > 8) hero.append(h('div', { class: 'heronote', text: 'và ' + (champs.length - 8) + ' người đồng hạng khác' }));
+      hero.append(h('div', { class: 'heronote', text: 'Chúc mừng các bạn! Cảm ơn tất cả đã tham gia 🎉' }));
+    } else {
+      hero.append(
+        h('div', { class: 'crown', text: '🎓' }),
+        h('div', { class: 'herot', text: 'KẾT THÚC CUỘC THI' }),
+        h('div', { class: 'heronote', text: 'Chưa có người chơi nào ghi điểm. Cảm ơn mọi người đã tham gia!' }));
+    }
+    stage.replaceChildren(hero);
+  }
+
+  function renderBoard() {
+    const ol = $('board');
+    ol.replaceChildren();
+    $('boardNote').textContent = S.top.length ? 'Top ' + Math.max(...S.top.map((r) => r.rank)) : '';
+    if (!S.top.length) {
+      ol.append(h('li', { class: 'empty', text: S.phase === 'lobby' ? 'Bảng xếp hạng sẽ hiện sau câu đầu tiên.' : 'Chưa có dữ liệu xếp hạng.' }));
+      return;
+    }
+    S.top.forEach((r, i) => {
+      const medal = r.rank === 1 ? '🥇' : r.rank === 2 ? '🥈' : r.rank === 3 ? '🥉' : r.rank;
+      ol.append(h('li', { class: 'row' + (r.rank === 1 && r.score > 0 ? ' top1' : ''), style: 'animation-delay:' + i * 40 + 'ms' },
+        h('span', { class: 'rk', text: String(medal) }),
+        h('span', { class: 'nm' }, r.name, h('span', { class: 'tm', text: r.totalTimeMs ? fmtTime(r.totalTimeMs) : '—' })),
+        h('span', { class: 'sc', text: String(r.score) })));
+    });
+  }
+
+  /* ================= nút điều khiển ================= */
+  function renderControls() {
+    const p = $('btnPrimary'), lock = $('btnLock');
+    lock.hidden = S.phase !== 'question';
+    p.disabled = false; p.classList.add('go');
+    if (S.phase === 'lobby') p.textContent = '▶ Bắt đầu cuộc thi';
+    else if (S.phase === 'question') { p.textContent = '⏳ Đang thi…'; p.disabled = true; }
+    else if (S.phase === 'reveal') {
+      const last = S.reveal ? S.reveal.isLast : S.qIndex + 1 >= S.total;
+      p.textContent = last ? '🏆 Công bố Quán quân' : 'Câu tiếp theo ➜';
+    } else { p.textContent = '↺ Chơi lại ván mới'; p.classList.remove('go'); }
+  }
+
+  const REASON = { wrong_phase: 'Thao tác này chưa phù hợp với trạng thái hiện tại.', forbidden: 'Phiên đăng nhập đã hết, hãy tải lại trang.' };
+  function act(event, data, confirmMsg) {
+    if (!authed) { toast('Chưa đăng nhập hoặc đang mất kết nối.'); return; }
+    if (S.busy) return;
+    if (confirmMsg && !window.confirm(confirmMsg)) return;
+    Snd.ensure();
+    S.busy = true;
+    setTimeout(() => { S.busy = false; }, 500);
+    socket.emit(event, data || {}, (res) => {
+      if (res && !res.ok) toast(REASON[res.reason] || 'Không thực hiện được (' + (res.reason || 'lỗi') + ').');
+    });
+  }
+
+  function primaryAction() {
+    if (S.phase === 'lobby') act('admin:start');
+    else if (S.phase === 'reveal') act('admin:next');
+    else if (S.phase === 'finished') act('admin:reset', {}, 'Bắt đầu ván mới? Điểm của mọi người sẽ được đặt lại về 0 (người chơi vẫn giữ nguyên).');
+  }
+  $('btnPrimary').addEventListener('click', primaryAction);
+  $('btnLock').addEventListener('click', () => act('admin:lock', {}, 'Chốt câu hỏi ngay bây giờ và chấm điểm?'));
+  $('btnReset').addEventListener('click', () => act('admin:reset', {}, 'Đặt lại điểm của tất cả người chơi và quay về phòng chờ?'));
+  $('btnWipe').addEventListener('click', () => act('admin:reset', { wipePlayers: true }, 'XOÁ toàn bộ danh sách người chơi? Mọi người phải vào lại bằng cách nhập tên.'));
+
+  document.addEventListener('keydown', (e) => {
+    if (!authed || e.target.tagName === 'INPUT' || e.repeat) return;
+    if (e.code === 'Space' || e.code === 'ArrowRight') {
+      e.preventDefault();
+      if (!$('btnPrimary').disabled) primaryAction();
+    }
+  });
+
+  /* ================= sự kiện từ server ================= */
+  socket.on('room:count', (c) => { if (authed) setCounts(c); });
+
+  socket.on('question:start', (q) => {
+    if (!authed) return;
+    S.phase = 'question'; S.q = q; S.reveal = null; S.qIndex = q.qIndex; S.total = q.total;
+    S.counts = { ...S.counts, answered: 0 };
+    startTimer(q.durationMs, q.durationMs);
+    Snd.start();
+    renderAll();
+  });
+
+  socket.on('question:reveal', (rv) => {
+    if (!authed) return;
+    stopTimer();
+    S.phase = 'reveal'; S.reveal = rv; S.top = rv.top || []; S.qIndex = rv.qIndex; S.total = rv.total;
+    Snd.reveal();
+    renderAll();
+  });
+
+  socket.on('game:finished', (d) => {
+    if (!authed) return;
+    stopTimer();
+    S.phase = 'finished'; S.finished = d; S.top = d.top || [];
+    renderAll();
+    if (d.champions && d.champions.length) { confetti(); Snd.fanfare(); } else Snd.reveal();
+  });
+
+  socket.on('game:reset', () => {
+    if (!authed) return;
+    stopTimer();
+    S.phase = 'lobby'; S.q = null; S.reveal = null; S.top = []; S.finished = null; S.qIndex = -1;
+    renderAll();
+  });
+
+  /* ================= các nút phụ ================= */
+  function copyText(text) {
+    const done = () => toast('Đã sao chép link.');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => toast(text));
+    else toast(text);
+  }
+
+  $('btnQr').addEventListener('click', () => {
+    const url = joinUrl();
+    $('qrBigLink').textContent = url;
+    $('qrOverlay').hidden = false;
+    makeQR($('qrBig'), url, 380);
+  });
+  const closeQr = () => { $('qrOverlay').hidden = true; };
+  $('btnQrClose').addEventListener('click', closeQr);
+  $('qrOverlay').addEventListener('click', (e) => { if (e.target === $('qrOverlay')) closeQr(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeQr(); });
+
+  const btnMute = $('btnMute');
+  const paintMute = () => { btnMute.textContent = Snd.muted ? '🔇' : '🔊'; };
+  btnMute.addEventListener('click', () => { Snd.ensure(); Snd.setMuted(!Snd.muted); paintMute(); });
+  paintMute();
+
+  $('btnFull').addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  });
+
+  if (!pass) $('passInput').focus();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+[
+  {
+    "text": "Trong bảng tuần hoàn hiện đại, các nguyên tố hoá học được sắp xếp theo chiều tăng dần của đại lượng nào?",
+    "options": ["Khối lượng nguyên tử", "Điện tích hạt nhân", "Số neutron", "Độ âm điện"],
+    "answer": 1,
+    "explanation": "Các nguyên tố được xếp theo chiều tăng dần điện tích hạt nhân (số hiệu nguyên tử Z)."
+  },
+  {
+    "text": "Số thứ tự của chu kì trong bảng tuần hoàn bằng:",
+    "options": ["Số electron hoá trị", "Số hiệu nguyên tử", "Số lớp electron", "Số electron ở lớp ngoài cùng"],
+    "answer": 2,
+    "explanation": "Nguyên tử các nguyên tố trong cùng một chu kì có cùng số lớp electron, bằng số thứ tự chu kì."
+  },
+  {
+    "text": "Nguyên tố thuộc nhóm VIIA có số electron hoá trị là:",
+    "options": ["5", "6", "7", "8"],
+    "answer": 2,
+    "explanation": "Với nguyên tố nhóm A, số thứ tự nhóm bằng số electron hoá trị: nhóm VIIA có 7 electron hoá trị."
+  },
+  {
+    "text": "Nguyên tử Na (Z = 11) có cấu hình electron 1s²2s²2p⁶3s¹. Na thuộc:",
+    "options": ["Chu kì 2, nhóm IA", "Chu kì 3, nhóm IA", "Chu kì 3, nhóm IB", "Chu kì 1, nhóm IIIA"],
+    "answer": 1,
+    "explanation": "Có 3 lớp electron nên ở chu kì 3; có 1 electron hoá trị thuộc phân lớp s nên ở nhóm IA."
+  },
+  {
+    "text": "Trong một chu kì, theo chiều tăng dần của điện tích hạt nhân, bán kính nguyên tử biến đổi như thế nào?",
+    "options": ["Tăng dần", "Giảm dần", "Không thay đổi", "Giảm rồi tăng"],
+    "answer": 1,
+    "explanation": "Số lớp electron không đổi nhưng điện tích hạt nhân tăng, lực hút lên electron tăng nên bán kính nguyên tử giảm dần."
+  },
+  {
+    "text": "Trong một nhóm A, theo chiều từ trên xuống dưới, độ âm điện của các nguyên tố biến đổi như thế nào?",
+    "options": ["Tăng dần", "Giảm dần", "Không đổi", "Tăng rồi giảm"],
+    "answer": 1,
+    "explanation": "Bán kính nguyên tử tăng nên khả năng hút electron giảm, độ âm điện giảm dần."
+  },
+  {
+    "text": "Nguyên tố nào có độ âm điện lớn nhất trong bảng tuần hoàn?",
+    "options": ["Oxygen (O)", "Chlorine (Cl)", "Fluorine (F)", "Nitrogen (N)"],
+    "answer": 2,
+    "explanation": "Fluorine có độ âm điện lớn nhất (3,98 theo thang Pauling)."
+  },
+  {
+    "text": "Trong một chu kì, theo chiều tăng dần của điện tích hạt nhân, tính kim loại và tính phi kim biến đổi như thế nào?",
+    "options": [
+      "Tính kim loại tăng, tính phi kim giảm",
+      "Tính kim loại giảm, tính phi kim tăng",
+      "Cả hai đều tăng",
+      "Cả hai đều giảm"
+    ],
+    "answer": 1,
+    "explanation": "Từ trái sang phải trong một chu kì, tính kim loại giảm dần và tính phi kim tăng dần."
+  },
+  {
+    "text": "Công thức chung của oxide cao nhất của các nguyên tố nhóm VIIA (R) là:",
+    "options": ["R2O", "RO2", "R2O5", "R2O7"],
+    "answer": 3,
+    "explanation": "Hoá trị cao nhất với oxygen bằng số thứ tự nhóm (VII) nên oxide cao nhất có dạng R2O7 (ví dụ Cl2O7)."
+  },
+  {
+    "text": "Dãy nào sau đây sắp xếp các hydroxide theo chiều tính base GIẢM dần?",
+    "options": [
+      "NaOH, Mg(OH)2, Al(OH)3",
+      "Al(OH)3, Mg(OH)2, NaOH",
+      "Mg(OH)2, NaOH, Al(OH)3",
+      "Al(OH)3, NaOH, Mg(OH)2"
+    ],
+    "answer": 0,
+    "explanation": "Trong chu kì 3, từ Na đến Al tính kim loại giảm nên tính base của hydroxide giảm: NaOH > Mg(OH)2 > Al(OH)3."
+  }
+]
